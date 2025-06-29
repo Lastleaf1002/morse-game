@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morse Code Learning Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f5ff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .mode-btn:hover {
+            background-color: #2980b9;
+        }
+        .mode-btn.active {
+            background-color: #2c3e50;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .training-area, .game-area-content {
+            width: 100%;
+            display: none;
+        }
+        .active-area {
+            display: block;
+        }
+        .morse-display {
+            height: 60px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .control-btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        .control-btn:hover {
+            background-color: #2980b9;
+        }
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .char-btn {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .char-btn:hover {
+            background-color: #f0f0f0;
+        }
+        .char-btn.correct {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .char-btn.wrong {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .space-btn {
+            background-color: #ecf0f1;
+            font-weight: bold;
+        }
+        .level-selector {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .level-btn {
+            padding: 8px 16px;
+            margin: 0 5px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            background-color: #95a5a6;
+            color: white;
+            cursor: pointer;
+        }
+        .level-btn.active {
+            background-color: #16a085;
+        }
+        .word-display {
+            font-size: 24px;
+            height: 40px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+        .speed-control {
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+        .speed-control label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .speed-control input {
+            width: 100%;
+        }
+        .score-display {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            display: none;
+        }
+        .game-over-content {
+            background-color: #2c3e50;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80%;
+        }
+        .game-over-content h2 {
+            margin-top: 0;
+            color: #e74c3c;
+        }
+        .restart-btn {
+            padding: 10px 20px;
+            margin-top: 20px;
+            font-size: 16px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .restart-btn:hover {
+            background-color: #c0392b;
+        }
+        .reference-table {
+            margin-top: 30px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .reference-table th, .reference-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .reference-table td:nth-child(even) {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+        }
+        .reference-table th {
+            background-color: #f2f2f2;
+        }
+        .reference-toggle {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .reference-section {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Morse Code Learning Game</h1>
+    
+    <div class="container">
+        <div class="mode-selector">
+            <button class="mode-btn active" id="training-btn">Training Mode</button>
+            <button class="mode-btn" id="game-btn">Game Mode</button>
+        </div>
+        
+        <div class="training-area active-area">
+            <div class="morse-display" id="training-morse-display">Click a character to hear its Morse code</div>
+            <div class="controls">
+                <button class="control-btn" id="play-again-btn">Play Again</button>
+                <button class="control-btn" id="show-answer-btn">Show Code</button>
+            </div>
+            <div class="character-grid" id="training-grid"></div>
+        </div>
+        
+        <div class="game-area-content">
+            <div class="level-selector">
+                <button class="level-btn active" data-level="1">Level 1: Characters</button>
+                <button class="level-btn" data-level="2">Level 2: Words</button>
+                <button class="level-btn" data-level="3">Level 3: Messages</button>
+            </div>
+            
+            <div class="speed-control">
+                <label for="speed-slider">Speed: <span id="speed-value">Normal</span></label>
+                <input type="range" id="speed-slider" min="1" max="3" value="2">
+            </div>
+            
+            <div class="score-display">Score: <span id="score">0</span> | Lives: <span id="lives">3</span></div>
+            
+            <div class="morse-display" id="game-morse-display">Press Play to start</div>
+            <div class="word-display" id="word-display"></div>
+            
+            <div class="controls">
+                <button class="control-btn" id="play-morse-btn">Play</button>
+                <button class="control-btn" id="next-btn">Next (Skip)</button>
+            </div>
+            
+            <div class="character-grid" id="game-grid"></div>
+        </div>
+    </div>
+    
+    <button class="reference-toggle" id="reference-toggle">Show Morse Code Reference</button>
+    
+    <div class="reference-section" id="reference-section">
+        <div class="container">
+            <h2>Morse Code Reference</h2>
+            <table class="reference-table">
+                <tr>
+                    <th>Character</th>
+                    <th>Morse Code</th>
+                    <th>Character</th>
+                    <th>Morse Code</th>
+                    <th>Character</th>
+                    <th>Morse Code</th>
+                </tr>
+                <tr>
+                    <td>A</td>
+                    <td>· —</td>
+                    <td>N</td>
+                    <td>— ·</td>
+                    <td>0</td>
+                    <td>— — — — —</td>
+                </tr>
+                <tr>
+                    <td>B</td>
+                    <td>— · · ·</td>
+                    <td>O</td>
+                    <td>— — —</td>
+                    <td>1</td>
+                    <td>· — — — —</td>
+                </tr>
+                <tr>
+                    <td>C</td>
+                    <td>— · — ·</td>
+                    <td>P</td>
+                    <td>· — — ·</td>
+                    <td>2</td>
+                    <td>· · — — —</td>
+                </tr>
+                <tr>
+                    <td>D</td>
+                    <td>— · ·</td>
+                    <td>Q</td>
+                    <td>— — · —</td>
+                    <td>3</td>
+                    <td>· · · — —</td>
+                </tr>
+                <tr>
+                    <td>E</td>
+                    <td>·</td>
+                    <td>R</td>
+                    <td>· — ·</td>
+                    <td>4</td>
+                    <td>· · · · —</td>
+                </tr>
+                <tr>
+                    <td>F</td>
+                    <td>· · — ·</td>
+                    <td>S</td>
+                    <td>· · ·</td>
+                    <td>5</td>
+                    <td>· · · · ·</td>
+                </tr>
+                <tr>
+                    <td>G</td>
+                    <td>— — ·</td>
+                    <td>T</td>
+                    <td>—</td>
+                    <td>6</td>
+                    <td>— · · · ·</td>
+                </tr>
+                <tr>
+                    <td>H</td>
+                    <td>· · · ·</td>
+                    <td>U</td>
+                    <td>· · —</td>
+                    <td>7</td>
+                    <td>— — · · ·</td>
+                </tr>
+                <tr>
+                    <td>I</td>
+                    <td>· ·</td>
+                    <td>V</td>
+                    <td>· · · —</td>
+                    <td>8</td>
+                    <td>— — — · ·</td>
+                </tr>
+                <tr>
+                    <td>J</td>
+                    <td>· — — —</td>
+                    <td>W</td>
+                    <td>· — —</td>
+                    <td>9</td>
+                    <td>— — — — ·</td>
+                </tr>
+                <tr>
+                    <td>K</td>
+                    <td>— · —</td>
+                    <td>X</td>
+                    <td>— · · —</td>
+                    <td>.</td>
+                    <td>· — · — · —</td>
+                </tr>
+                <tr>
+                    <td>L</td>
+                    <td>· — · ·</td>
+                    <td>Y</td>
+                    <td>— · — —</td>
+                    <td>,</td>
+                    <td>— — · · — —</td>
+                </tr>
+                <tr>
+                    <td>M</td>
+                    <td>— —</td>
+                    <td>Z</td>
+                    <td>— — · ·</td>
+                    <td>?</td>
+                    <td>· · — — · ·</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Morse code dictionary
+        const morseCode = {
+            'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.', 
+            'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..', 
+            'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.', 
+            'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 
+            'Y': '-.--', 'Z': '--..', 
+            '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', 
+            '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.', 
+            '.': '.-.-.-', ',': '--..--', '?': '..--..', '/': '-..-.', '@': '.--.-.'
+        };
+
+        // Audio context for generating sounds
+        let audioContext;
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.error('Web Audio API is not supported in this browser');
+        }
+
+        // Game state
+        let currentMode = 'training';
+        let currentLevel = 1;
+        let currentSpeed = 2; // 1: Slow, 2: Normal, 3: Fast
+        let score = 0;
+        let lives = 3; // 라이프 추가
+        let currentCharacter = '';
+        let currentWord = '';
+        let currentMessage = '';
+        let wordProgress = '';
+        let gameActive = false;
+        let trainingActive = false;
+
+        // Speed settings (in milliseconds)
+        const speeds = {
+            1: { dot: 200, dash: 600, letterGap: 600, wordGap: 1400 },
+            2: { dot: 100, dash: 300, letterGap: 300, wordGap: 700 },
+            3: { dot: 50, dash: 150, letterGap: 150, wordGap: 350 }
+        };
+
+        // Word lists for different levels
+        const easyWords = ['SOS', 'HI', 'OK', 'YES', 'NO', 'HAM', 'RADIO', 'CODE', 'MORSE', 'DOT', 'DASH'];
+        const mediumWords = ['HELLO', 'WORLD', 'SIGNAL', 'AMATEUR', 'WIRELESS', 'TELEGRAPH', 'OPERATOR', 'STATION'];
+        const messages = [
+            'SOS NEED HELP',
+            'CQ CQ CQ DE MORSE',
+            'HELLO WORLD',
+            'PRACTICE MAKES PERFECT',
+            '73 BEST REGARDS'
+        ];
+
+        // DOM elements
+        const trainingBtn = document.getElementById('training-btn');
+        const gameBtn = document.getElementById('game-btn');
+        const trainingArea = document.querySelector('.training-area');
+        const gameArea = document.querySelector('.game-area-content');
+        const trainingGrid = document.getElementById('training-grid');
+        const gameGrid = document.getElementById('game-grid');
+        const trainingMorseDisplay = document.getElementById('training-morse-display');
+        const gameMorseDisplay = document.getElementById('game-morse-display');
+        const wordDisplay = document.getElementById('word-display');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const showAnswerBtn = document.getElementById('show-answer-btn');
+        const playMorseBtn = document.getElementById('play-morse-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const levelBtns = document.querySelectorAll('.level-btn');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        const scoreDisplay = document.getElementById('score');
+        const livesDisplay = document.getElementById('lives');
+        const referenceToggle = document.getElementById('reference-toggle');
+        const referenceSection = document.getElementById('reference-section');
+
+        // Initialize the game
+        function init() {
+            populateCharacterGrid(trainingGrid);
+            populateCharacterGrid(gameGrid);
+            setupEventListeners();
+            updateSpeedDisplay();
+        }
+
+        // Populate character grid with buttons
+        function populateCharacterGrid(grid) {
+            // Add alphabet buttons
+            for (let i = 65; i <= 90; i++) {
+                const char = String.fromCharCode(i);
+                const button = document.createElement('button');
+                button.className = 'char-btn';
+                button.textContent = char;
+                button.dataset.char = char;
+                grid.appendChild(button);
+            }
+            
+            // Add number buttons
+            for (let i = 0; i <= 9; i++) {
+                const button = document.createElement('button');
+                button.className = 'char-btn';
+                button.textContent = i.toString();
+                button.dataset.char = i.toString();
+                grid.appendChild(button);
+            }
+            
+            // Add special character buttons
+            const specialChars = ['.', ',', '?', '/', '@'];
+            specialChars.forEach(char => {
+                const button = document.createElement('button');
+                button.className = 'char-btn';
+                button.textContent = char;
+                button.dataset.char = char;
+                grid.appendChild(button);
+            });
+            
+            // Add space button for level 3
+            const spaceButton = document.createElement('button');
+            spaceButton.className = 'char-btn space-btn';
+            spaceButton.textContent = 'Space';
+            spaceButton.dataset.char = ' ';
+            spaceButton.style.gridColumn = 'span 2';
+            grid.appendChild(spaceButton);
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Mode switching
+            trainingBtn.addEventListener('click', () => switchMode('training'));
+            gameBtn.addEventListener('click', () => {
+                switchMode('game');
+                resetEntireGame(); // Reset score and lives when switching to game mode
+            });
+            
+            // Training mode buttons
+            trainingGrid.addEventListener('click', handleTrainingCharacterClick);
+            playAgainBtn.addEventListener('click', playCurrentMorse);
+            showAnswerBtn.addEventListener('click', showAnswer);
+            
+            // Game mode buttons
+            levelBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    levelBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentLevel = parseInt(btn.dataset.level);
+                    resetEntireGame(); // Reset score and lives when changing levels
+                });
+            });
+            
+            speedSlider.addEventListener('input', () => {
+                currentSpeed = parseInt(speedSlider.value);
+                updateSpeedDisplay();
+            });
+            
+            playMorseBtn.addEventListener('click', startGameRound);
+            nextBtn.addEventListener('click', nextGameRound);
+            gameGrid.addEventListener('click', handleGameCharacterClick);
+            
+            // Reference toggle
+            referenceToggle.addEventListener('click', () => {
+                if (referenceSection.style.display === 'block') {
+                    referenceSection.style.display = 'none';
+                    referenceToggle.textContent = 'Show Morse Code Reference';
+                } else {
+                    referenceSection.style.display = 'block';
+                    referenceToggle.textContent = 'Hide Morse Code Reference';
+                }
+            });
+        }
+
+        // Switch between training and game modes
+        function switchMode(mode) {
+            currentMode = mode;
+            if (mode === 'training') {
+                trainingBtn.classList.add('active');
+                gameBtn.classList.remove('active');
+                trainingArea.classList.add('active-area');
+                gameArea.classList.remove('active-area');
+                trainingMorseDisplay.textContent = 'Click a character to hear its Morse code';
+                resetTraining();
+            } else {
+                trainingBtn.classList.remove('active');
+                gameBtn.classList.add('active');
+                trainingArea.classList.remove('active-area');
+                gameArea.classList.add('active-area');
+                resetGame();
+            }
+        }
+
+        // Handle click on character in training mode
+        function handleTrainingCharacterClick(e) {
+            if (!e.target.classList.contains('char-btn')) return;
+            
+            const char = e.target.dataset.char;
+            currentCharacter = char;
+            trainingMorseDisplay.textContent = `Listen to the Morse code for: ${char}`;
+            playMorseCode(morseCode[char]);
+            trainingActive = true;
+        }
+
+        // Show answer in training mode
+        function showAnswer() {
+            if (!trainingActive || !currentCharacter) return;
+            
+            // Add extra spacing between morse code symbols for better visibility
+            const formattedMorseCode = morseCode[currentCharacter]
+                .replace(/\./g, '· ')
+                .replace(/\-/g, '— ')
+                .trim();
+            
+            trainingMorseDisplay.textContent = `${currentCharacter} = ${formattedMorseCode}`;
+        }
+
+        // Play current morse code again
+        function playCurrentMorse() {
+            if (!trainingActive || !currentCharacter) return;
+            
+            playMorseCode(morseCode[currentCharacter]);
+        }
+
+        // Reset training mode
+        function resetTraining() {
+            trainingActive = false;
+            currentCharacter = '';
+            trainingMorseDisplay.textContent = 'Click a character to hear its Morse code';
+            
+            // Reset all buttons
+            const buttons = trainingGrid.querySelectorAll('.char-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('correct', 'wrong');
+            });
+        }
+
+        // Start a new game round
+        function startGameRound() {
+            if (gameActive && currentLevel !== 1 && currentLevel !== 2 && currentLevel !== 3) return;
+            
+            // If already active in any level, apply penalty for replaying
+            if (gameActive && (currentLevel === 1 || currentLevel === 2 || currentLevel === 3)) {
+                score = Math.max(0, score - 2);
+                scoreDisplay.textContent = score;
+            } else {
+                gameActive = true;
+                resetCharacterButtons(gameGrid);
+            }
+            
+            if (currentLevel === 1) {
+                // Level 1: Single character
+                if (!currentCharacter) {
+                    const characters = Object.keys(morseCode);
+                    currentCharacter = characters[Math.floor(Math.random() * characters.length)];
+                }
+                gameMorseDisplay.textContent = 'Listen and select the correct character';
+                wordDisplay.textContent = '';
+                playMorseCode(morseCode[currentCharacter]);
+            } else if (currentLevel === 2) {
+                // Level 2: Words
+                if (!currentWord) {
+                    const wordList = [...easyWords, ...mediumWords];
+                    currentWord = wordList[Math.floor(Math.random() * wordList.length)];
+                    wordProgress = '_'.repeat(currentWord.length);
+                }
+                gameMorseDisplay.textContent = 'Listen and complete the word';
+                wordDisplay.textContent = wordProgress;
+                playWordMorseCode(currentWord);
+            } else if (currentLevel === 3) {
+                // Level 3: Messages
+                if (!currentMessage) {
+                    currentMessage = messages[Math.floor(Math.random() * messages.length)];
+                }
+                gameMorseDisplay.textContent = 'Listen and decode the message';
+                wordDisplay.textContent = wordProgress;
+                playMessageMorseCode(currentMessage);
+            }
+        }
+
+        // Handle next round button
+        function nextGameRound() {
+            if (!gameActive) return;
+            
+            // Apply penalty for skipping
+            score = Math.max(0, score - 5);
+            scoreDisplay.textContent = score;
+            
+            // Reduce lives for skipping
+            lives--;
+            livesDisplay.textContent = lives;
+            
+            // Check if game over
+            if (lives <= 0) {
+                gameOver();
+                return;
+            }
+            
+            resetGame();
+            startGameRound();
+        }
+
+        // Reset game state
+        function resetGame() {
+            gameActive = false;
+            currentCharacter = '';
+            currentWord = '';
+            currentMessage = '';
+            wordProgress = '';
+            
+            gameMorseDisplay.textContent = 'Press Play to start';
+            wordDisplay.textContent = '';
+            resetCharacterButtons(gameGrid);
+        }
+        
+        // Reset the entire game (including score and lives)
+        function resetEntireGame() {
+            resetGame();
+            score = 0;
+            lives = 3;
+            scoreDisplay.textContent = score;
+            livesDisplay.textContent = lives;
+        }
+
+        // Reset character buttons
+        function resetCharacterButtons(grid) {
+            const buttons = grid.querySelectorAll('.char-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('correct', 'wrong');
+            });
+        }
+
+        // Handle click on character in game mode
+        function handleGameCharacterClick(e) {
+            if (!gameActive || !e.target.classList.contains('char-btn')) return;
+            
+            const selectedChar = e.target.dataset.char;
+            
+            if (currentLevel === 1) {
+                // Level 1: Single character
+                if (selectedChar === currentCharacter) {
+                    e.target.classList.add('correct');
+                    score += 10;
+                    scoreDisplay.textContent = score;
+                    gameMorseDisplay.textContent = `Correct! ${selectedChar} = ${morseCode[selectedChar].replace(/\./g, '· ').replace(/\-/g, '— ').trim()}`;
+                    
+                    // 맞추면 잠시 후 자동으로 다음 문제로 넘어가기
+                    setTimeout(() => {
+                        resetGame();
+                        startGameRound();
+                    }, 1500);
+                } else {
+                    e.target.classList.add('wrong');
+                    score = Math.max(0, score - 5);
+                    scoreDisplay.textContent = score;
+                    
+                    // Reduce lives
+                    lives--;
+                    livesDisplay.textContent = lives;
+                    
+                    // Check if game over
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            } else if (currentLevel === 2) {
+                // Level 2: Words
+                const nextCharIndex = wordProgress.indexOf('_');
+                if (nextCharIndex !== -1 && selectedChar === currentWord[nextCharIndex]) {
+                    // Update word progress
+                    wordProgress = wordProgress.substring(0, nextCharIndex) + selectedChar + wordProgress.substring(nextCharIndex + 1);
+                    wordDisplay.textContent = wordProgress;
+                    e.target.classList.add('correct');
+                    
+                    // Check if word is complete
+                    if (wordProgress === currentWord) {
+                        score += 20;
+                        scoreDisplay.textContent = score;
+                        gameMorseDisplay.textContent = `Correct! You completed the word: ${currentWord}`;
+                        
+                        // 단어를 완성하면 잠시 후 자동으로 다음 문제로 넘어가기
+                        setTimeout(() => {
+                            resetGame();
+                            startGameRound();
+                        }, 1500);
+                    }
+                } else {
+                    e.target.classList.add('wrong');
+                    score = Math.max(0, score - 2);
+                    scoreDisplay.textContent = score;
+                    
+                    // Reduce lives
+                    lives--;
+                    livesDisplay.textContent = lives;
+                    
+                    // Check if game over
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            } else if (currentLevel === 3) {
+                // Level 3: Messages
+                // In this level, we'll let the user build the message character by character
+                wordProgress += selectedChar;
+                wordDisplay.textContent = wordProgress;
+                
+                // 공백 처리를 위한 특별 로직
+                let compareMessage = currentMessage;
+                let compareProgress = wordProgress;
+                
+                // 공백이 여러 개 연속으로 있을 경우 하나로 통일
+                compareMessage = compareMessage.replace(/\s+/g, ' ');
+                compareProgress = compareProgress.replace(/\s+/g, ' ');
+                
+                // Check if the current progress matches the beginning of the message
+                if (compareMessage.startsWith(compareProgress)) {
+                    if (compareProgress === compareMessage) {
+                        score += 50;
+                        scoreDisplay.textContent = score;
+                        gameMorseDisplay.textContent = `Excellent! You decoded the message: ${currentMessage}`;
+                        
+                        // 메시지를 완성하면 잠시 후 자동으로 다음 문제로 넘어가기
+                        setTimeout(() => {
+                            resetGame();
+                            startGameRound();
+                        }, 2000);
+                    }
+                } else {
+                    // If wrong character, remove it and penalize
+                    wordProgress = wordProgress.slice(0, -1);
+                    wordDisplay.textContent = wordProgress;
+                    e.target.classList.add('wrong');
+                    score = Math.max(0, score - 2);
+                    scoreDisplay.textContent = score;
+                    
+                    // Reduce lives
+                    lives--;
+                    livesDisplay.textContent = lives;
+                    
+                    // Check if game over
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+        }
+        
+        // Game over function
+        function gameOver() {
+            gameActive = false;
+            
+            // 정답 표시
+            let correctAnswer = '';
+            if (currentLevel === 1) {
+                correctAnswer = `The correct character was: ${currentCharacter}`;
+            } else if (currentLevel === 2) {
+                correctAnswer = `The correct word was: ${currentWord}`;
+            } else if (currentLevel === 3) {
+                correctAnswer = `The correct message was: ${currentMessage}`;
+            }
+            
+            gameMorseDisplay.textContent = `Game Over! Your final score: ${score}`;
+            wordDisplay.textContent = correctAnswer;
+            
+            // Disable all character buttons
+            const buttons = gameGrid.querySelectorAll('.char-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+            });
+            
+            // Add a restart button
+            const restartBtn = document.createElement('button');
+            restartBtn.className = 'control-btn';
+            restartBtn.textContent = 'Restart Game';
+            restartBtn.style.backgroundColor = '#e74c3c';
+            restartBtn.style.marginTop = '10px';
+            restartBtn.addEventListener('click', () => {
+                // Re-enable all buttons
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                });
+                
+                // Remove the restart button
+                restartBtn.remove();
+                
+                // Reset the game
+                resetEntireGame();
+            });
+            
+            // Add the restart button after the controls
+            const controlsDiv = document.querySelector('.game-area-content .controls');
+            controlsDiv.parentNode.insertBefore(restartBtn, controlsDiv.nextSibling);
+        }
+
+        // Play morse code for a single character
+        function playMorseCode(code) {
+            if (!audioContext) return;
+            
+            const speedSettings = speeds[currentSpeed];
+            let startTime = audioContext.currentTime + 0.1;
+            
+            for (let i = 0; i < code.length; i++) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 700;
+                gainNode.gain.value = 0.5;
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                const duration = code[i] === '.' ? speedSettings.dot / 1000 : speedSettings.dash / 1000;
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + duration);
+                
+                startTime += duration + 0.05; // Small gap between dots and dashes
+            }
+        }
+
+        // Play morse code for a word
+        function playWordMorseCode(word) {
+            if (!audioContext) return;
+            
+            const speedSettings = speeds[currentSpeed];
+            let startTime = audioContext.currentTime + 0.1;
+            
+            for (let i = 0; i < word.length; i++) {
+                const char = word[i];
+                const code = morseCode[char];
+                
+                for (let j = 0; j < code.length; j++) {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 700;
+                    gainNode.gain.value = 0.5;
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    const duration = code[j] === '.' ? speedSettings.dot / 1000 : speedSettings.dash / 1000;
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                    
+                    startTime += duration + 0.05; // Small gap between dots and dashes
+                }
+                
+                // Add letter gap
+                startTime += speedSettings.letterGap / 1000;
+            }
+        }
+
+        // Play morse code for a message (multiple words)
+        function playMessageMorseCode(message) {
+            if (!audioContext) return;
+            
+            const words = message.split(' ');
+            const speedSettings = speeds[currentSpeed];
+            let startTime = audioContext.currentTime + 0.1;
+            
+            for (let w = 0; w < words.length; w++) {
+                const word = words[w];
+                
+                for (let i = 0; i < word.length; i++) {
+                    const char = word[i];
+                    const code = morseCode[char];
+                    
+                    if (!code) continue; // Skip if character not in morse code dictionary
+                    
+                    for (let j = 0; j < code.length; j++) {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.type = 'sine';
+                        oscillator.frequency.value = 700;
+                        gainNode.gain.value = 0.5;
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        const duration = code[j] === '.' ? speedSettings.dot / 1000 : speedSettings.dash / 1000;
+                        
+                        oscillator.start(startTime);
+                        oscillator.stop(startTime + duration);
+                        
+                        startTime += duration + 0.05; // Small gap between dots and dashes
+                    }
+                    
+                    // Add letter gap
+                    startTime += speedSettings.letterGap / 1000;
+                }
+                
+                // Add word gap (only between words, not after the last word)
+                if (w < words.length - 1) {
+                    startTime += speedSettings.wordGap / 1000;
+                }
+            }
+        }
+
+        // Update speed display
+        function updateSpeedDisplay() {
+            const speedLabels = {
+                1: 'Slow',
+                2: 'Normal',
+                3: 'Fast'
+            };
+            speedValue.textContent = speedLabels[currentSpeed];
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
